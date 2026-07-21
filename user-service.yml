@@ -3,7 +3,7 @@ spring:
     driver-class-name: org.postgresql.Driver
     username: postgres
     password: root
-    url: jdbc:postgresql://localhost:5432/ecomm_orders
+    url: jdbc:postgresql://localhost:5432/ecomm_users
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
@@ -24,7 +24,7 @@ management:
       exposure:
         include: "*"
 server:
-  port: 8081
+  port: 8082
 springdoc:
   api-docs:
     path: /v3/api-docs
