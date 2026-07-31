@@ -24,7 +24,7 @@ management:
       exposure:
         include: "*"
 server:
-  port: 8082
+  port: 8085
 springdoc:
   api-docs:
     path: /v3/api-docs
@@ -33,4 +33,4 @@ springdoc:
     path: /swagger-ui.html
     enabled: true
     operations-sorter: method
-  packages-to-scan: com.ecommerce.product.controller
+  packages-to-scan: com.ecommerce.user.controller
