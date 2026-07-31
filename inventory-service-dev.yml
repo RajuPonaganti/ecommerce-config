@@ -33,4 +33,4 @@ springdoc:
     path: /swagger-ui.html
     enabled: true
     operations-sorter: method
-  packages-to-scan: com.ecommerce.product.controller
+  packages-to-scan: com.ecommerce.inventory.controller
