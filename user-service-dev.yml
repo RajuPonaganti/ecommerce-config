@@ -24,7 +24,7 @@ management:
       exposure:
         include: "*"
 server:
-  port: 8082
+  port: 8085
 springdoc:
   api-docs:
     path: /v3/api-docs
