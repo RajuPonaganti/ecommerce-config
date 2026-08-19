@@ -9,6 +9,32 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+  kafka:
+    bootstrap-servers: localhost:9092
+
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      # JsonSerializer handles any Object — same as what OrderCreatedEventSerializer did
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      properties:
+        # Idempotent producer — deduplicates retries (same as ENABLE_IDEMPOTENCE_CONFIG=true)
+        enable.idempotence: true
+        retries: 2147483647   # Integer.MAX_VALUE
+        # Required when enable.idempotence=true
+        max.in.flight.requests.per.connection: 5
+        # Embed type info so consumers know which class to deserialize to
+        spring.json.add.type.headers: true
+
+    consumer:
+      group-id: order-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        # Trust all event packages for deserialization
+        spring.json.trusted.packages: "com.ecommerce.order.events,com.ecommerce.payment.events"
+
 eureka:
   client:
     register-with-eureka: true
@@ -34,3 +60,31 @@ springdoc:
     enabled: true
     operations-sorter: method
   packages-to-scan: com.ecommerce.order.controller
+resilience4j:
+  circuitbreaker:
+    instances:
+      inventory-service:
+        # Evaluate based on last 10 calls
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        # Need at least 5 calls before circuit can trip
+        minimumNumberOfCalls: 5
+        # Trip OPEN if >50% of calls fail
+        failureRateThreshold: 50
+        # Stay OPEN for 30s, then try HALF_OPEN
+        waitDurationInOpenState: 30s
+        # Allow 3 test calls in HALF_OPEN state
+        permittedNumberOfCallsInHalfOpenState: 3
+        # Calls taking >3s count as failures
+        slowCallDurationThreshold: 3s
+        slowCallRateThreshold: 80
+
+# Enable health endpoint to see CB state
+management:
+  health:
+    circuitbreakers:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,circuitbreakers
