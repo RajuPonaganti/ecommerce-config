@@ -1,5 +1,6 @@
 payment:
   gateway:
+    base-url: http://localhost:8080
     api-key: pgw_test_ecomm_abc123xyz789
     api-secret: ecomm_secret_do_not_use_in_prod
     merchant-id: MERCH_ECOMM_001
