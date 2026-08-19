@@ -83,4 +83,16 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,circuitbreakers
+        include: health, info, circuitbreakers,metrics, prometheus  # explicit allowlist, not "*"
+  endpoint:
+    health:
+      show-details: when-authorized   # don't leak DB/disk details to anonymous callers
+  tracing:
+    sampling:
+      probability: 0.1   # lower in prod, as discussed
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans    
+logging:
+  pattern:
+    level: "%5p [${spring.application.name},%X{traceId},%X{spanId}]"
