@@ -1,4 +1,24 @@
 spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      properties:
+        enable.idempotence: true
+        retries: 4
+        max.in.flight.requests.per.connection: 5
+        spring.json.add.type.headers: true
+    consumer:
+      group-id: inventory-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        # Use __TypeId__ header to pick the correct class — Commons module is on classpath
+        spring.json.use.type.headers: true
+        spring.json.trusted.packages: "com.ecommerce.commons"
   datasource:
     driver-class-name: org.postgresql.Driver
     username: postgres

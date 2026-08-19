@@ -18,13 +18,8 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
-        spring.json.trusted.packages: >
-          com.ecommerce.notification.events,
-          com.ecommerce.order.events,
-          com.ecommerce.payment.events,
-          com.ecommerce.inventory.events
-        spring.json.use.type.headers: false
-        spring.json.value.default.type: com.fasterxml.jackson.databind.JsonNode
+        spring.json.use.type.headers: true
+        spring.json.trusted.packages: "com.ecommerce.commons"
 
 # Channels enabled/disabled — turn off real dispatchers locally
 notification:

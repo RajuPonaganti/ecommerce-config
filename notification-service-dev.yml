@@ -3,12 +3,38 @@ spring:
     driver-class-name: org.postgresql.Driver
     username: postgres
     password: root
-    url: jdbc:postgresql://localhost:5432/ecomm_payments
+    url: jdbc:postgresql://localhost:5432/ecomm_notification_service_db
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
     show-sql: true
+  kafka:
+    bootstrap-servers: localhost:9092
+
+    consumer:
+      group-id: notification-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.use.type.headers: true
+        spring.json.trusted.packages: "com.ecommerce.commons"
+
+# Channels enabled/disabled — turn off real dispatchers locally
+notification:
+  email:
+    enabled: false            # set true + provide SendGrid key for real sending
+    from: noreply@ecommerce.com
+    sendgrid-api-key: ${SENDGRID_API_KEY:dummy-key}
+  sms:
+    enabled: false            # set true + provide Twilio creds
+    from-number: ${TWILIO_FROM:+10000000000}
+    account-sid: ${TWILIO_ACCOUNT_SID:dummy}
+    auth-token: ${TWILIO_AUTH_TOKEN:dummy}
+  push:
+    enabled: false
+
 eureka:
   client:
     register-with-eureka: true
@@ -25,3 +51,12 @@ management:
         include: "*"
 server:
   port: 8088
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operations-sorter: method
+  packages-to-scan: com.ecommerce.inventory.controller

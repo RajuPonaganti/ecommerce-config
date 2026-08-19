@@ -33,7 +33,8 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         # Trust all event packages for deserialization
-        spring.json.trusted.packages: "com.ecommerce.order.events,com.ecommerce.payment.events"
+        spring.json.use.type.headers: true
+        spring.json.trusted.packages: "com.ecommerce.commons"
 
 eureka:
   client:
