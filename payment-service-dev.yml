@@ -4,6 +4,25 @@ payment:
     api-key: pgw_test_ecomm_abc123xyz789
     api-secret: ecomm_secret_do_not_use_in_prod
     merchant-id: MERCH_ECOMM_001
+resilience4j:
+  circuitbreaker:
+    instances:
+      paymentGateway:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 15s
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+  retry:
+    instances:
+      paymentGateway:
+        max-attempts: 2
+        wait-duration: 2s
+        retry-exceptions:
+          - com.ecommerce.payment.exception.PaymentGatewayUnavailableException
+        ignore-exceptions:
+          - com.ecommerce.payment.exception.PaymentDeclinedException
+          - com.ecommerce.payment.exception.PaymentGatewayAuthException
 eureka:
   client:
     register-with-eureka: true
