@@ -48,8 +48,11 @@ management:
     tracing:
       endpoint: http://localhost:9411/api/v2/spans    
 logging:
-  pattern:
-    level: "%5p [${spring.application.name},%X{traceId},%X{spanId}]"
+  level: "%5p [${spring.application.name},%X{traceId},%X{spanId}]"
+    root: WARN
+    com.ecommerce.payment: INFO
+    org.springframework.web: WARN
+    org.hibernate.SQL: WARN    
 server:
   port: 8087
 spring: 
