@@ -30,8 +30,7 @@ eureka:
       defaultZone: "http://localhost:8761/eureka/"
   instance:
     prefer-ip-address: true
-    lease-renewal-
-    interval-in-seconds: 10
+    lease-renewal-interval-in-seconds: 10
     lease-expiration-duration-in-seconds: 30
 management:
   endpoints:
@@ -48,11 +47,13 @@ management:
     tracing:
       endpoint: http://localhost:9411/api/v2/spans    
 logging:
-  level: "%5p [${spring.application.name},%X{traceId},%X{spanId}]"
+  pattern:
+    level: "%5p [${spring.application.name},%X{traceId:-},%X{spanId:-}]"
+  level:
     root: WARN
-    com.ecommerce.payment: INFO
+    com.ecommerce.inventory: INFO
     org.springframework.web: WARN
-    org.hibernate.SQL: WARN    
+    org.hibernate.SQL: WARN
 server:
   port: 8087
 spring: 
