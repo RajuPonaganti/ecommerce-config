@@ -1,40 +1,34 @@
 spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      properties:
+        enable.idempotence: true
+        retries: 4
+        max.in.flight.requests.per.connection: 5
+        spring.json.add.type.headers: true
+    consumer:
+      group-id: inventory-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        # Use __TypeId__ header to pick the correct class — Commons module is on classpath
+        spring.json.use.type.headers: true
+        spring.json.trusted.packages: "com.ecommerce.commons"
   datasource:
     driver-class-name: org.postgresql.Driver
     username: postgres
     password: root
-    url: jdbc:postgresql://localhost:5432/ecomm_orders
+    url: jdbc:postgresql://localhost:5432/ecomm_inventory
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
     show-sql: true
-  kafka:
-    bootstrap-servers: localhost:9092
-
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      # JsonSerializer handles any Object — same as what OrderCreatedEventSerializer did
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-      acks: all
-      properties:
-        # Idempotent producer — deduplicates retries (same as ENABLE_IDEMPOTENCE_CONFIG=true)
-        enable.idempotence: true
-        retries: 2147483647   # Integer.MAX_VALUE
-        # Required when enable.idempotence=true
-        max.in.flight.requests.per.connection: 5
-        # Embed type info so consumers know which class to deserialize to
-        spring.json.add.type.headers: true
-
-    consumer:
-      group-id: order-service
-      auto-offset-reset: earliest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      properties:
-        # Trust all event packages for deserialization
-        spring.json.use.type.headers: true
-        spring.json.trusted.packages: "com.ecommerce.commons"
 
 eureka:
   client:
@@ -45,8 +39,34 @@ eureka:
     prefer-ip-address: true
     lease-renewal-interval-in-seconds: 10
     lease-expiration-duration-in-seconds: 30
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, prometheus  # explicit allowlist, not "*"
+  endpoint:
+    health:
+      show-details: when-authorized   # don't leak DB/disk details to anonymous callers
+  tracing:
+    sampling:
+      probability: 0.1   # lower in prod, as discussed
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans
+
+logging:
+  pattern:
+    level: "%5p [${spring.application.name},%X{traceId:-},%X{spanId:-}]"
+  level:
+    root: WARN
+    com.ecommerce.inventory: INFO
+    org.springframework.web: WARN
+    org.hibernate.SQL: WARN
+
 server:
   port: 8083
+
 springdoc:
   api-docs:
     path: /v3/api-docs
@@ -56,46 +76,3 @@ springdoc:
     enabled: true
     operations-sorter: method
   packages-to-scan: com.ecommerce.order.controller
-resilience4j:
-  circuitbreaker:
-    instances:
-      inventory-service:
-        # Evaluate based on last 10 calls
-        slidingWindowType: COUNT_BASED
-        slidingWindowSize: 10
-        # Need at least 5 calls before circuit can trip
-        minimumNumberOfCalls: 5
-        # Trip OPEN if >50% of calls fail
-        failureRateThreshold: 50
-        # Stay OPEN for 30s, then try HALF_OPEN
-        waitDurationInOpenState: 30s
-        # Allow 3 test calls in HALF_OPEN state
-        permittedNumberOfCallsInHalfOpenState: 3
-        # Calls taking >3s count as failures
-        slowCallDurationThreshold: 3s
-        slowCallRateThreshold: 80
-
-# Enable health endpoint to see CB state
-management:
-  health:
-    circuitbreakers:
-      enabled: true
-  endpoints:
-    web:
-      exposure:
-        include: health, info, circuitbreakers,metrics, prometheus  # explicit allowlist, not "*"
-  endpoint:
-    health:
-      show-details: when-authorized   # don't leak DB/disk details to anonymous callers
-  tracing:
-    sampling:
-      probability: 0.1   # lower in prod, as discussed
-  zipkin:
-    tracing:
-      endpoint: http://localhost:9411/api/v2/spans    
-logging:
-  level: "%5p [${spring.application.name},%X{traceId},%X{spanId}]"
-    root: WARN
-    com.ecommerce.order: INFO
-    org.springframework.web: WARN
-    org.hibernate.SQL: WARN    
