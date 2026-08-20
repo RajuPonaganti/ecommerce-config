@@ -1,0 +1,14 @@
+eureka:
+  client:
+    register-with-eureka: true
+    service-url:
+      defaultZone: "http://localhost:8761/eureka/"
+# IMPORTANT: this must be byte-for-byte identical to gateway.jwt.secret
+# in api-gateway's config, or tokens minted here will fail JwtAuthFilter's
+# signature check. Pull both from the same config-server key / secret store.
+security:
+  jwt:
+    secret: ${JWT_SECRET:XqaPg9V75tgYuV+nCTjBQXSIfDYuB7pL4GLUOeu66gE=}
+    issuer: auth-service
+    access-token-ttl-seconds: 900      # 15 min
+    refresh-token-ttl-seconds: 604800  # 7 days
